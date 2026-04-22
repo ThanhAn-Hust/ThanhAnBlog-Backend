@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy toàn bộ source code vào container
 COPY . .
 
-# Tạo file application.yml từ biến môi trường (không cần đưa lên Github)
-RUN cat > src/main/resources/application.yml <<'ENDOFYML'
+# Tạo thư mục resources (phòng trường hợp chưa có) và file application.yml
+RUN mkdir -p src/main/resources && cat > src/main/resources/application.yml <<'ENDOFYML'
 spring:
   datasource:
     url: ${DB_URL}
@@ -46,7 +46,7 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
 server:
-  port: ${PORT:8080}
+  port: ${PORT:10000}
 ENDOFYML
 
 # Cấp quyền thực thi cho Maven Wrapper và Build file JAR
@@ -60,9 +60,9 @@ WORKDIR /app
 # Copy file JAR đã được build từ Stage 1 sang
 COPY --from=builder /app/target/*.jar app.jar
 
-# Khai báo ENV PORT mặc định
+# Render mặc định dùng port 10000
 ENV PORT=10000
 EXPOSE 10000
 
-# Chạy ứng dụng với giới hạn RAM (Free tier Render chỉ có 512MB) và ép cổng theo Render
+# Chạy ứng dụng với giới hạn RAM và ép cổng theo Render
 ENTRYPOINT ["sh", "-c", "java -Xmx300m -jar app.jar --server.port=${PORT}"]
