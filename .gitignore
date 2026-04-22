@@ -36,5 +36,4 @@ build/
 application.yml
 application-*.yml
 .env
-
 schema.sql
