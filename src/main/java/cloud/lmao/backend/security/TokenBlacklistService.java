@@ -24,7 +24,11 @@ public class TokenBlacklistService {
      * @param expirationTimeInMills Thời gian sống còn lại của token tính bằng mili giây
      */
     public void addToBlacklist(String token, long expirationTimeInMills) {
-        redisTemplate.opsForValue().set(token, "blacklisted", expirationTimeInMills, TimeUnit.MILLISECONDS);
+        try {
+            redisTemplate.opsForValue().set(token, "blacklisted", expirationTimeInMills, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            System.err.println("[WARN] Redis không khả dụng, bỏ qua blacklist token: " + e.getMessage());
+        }
     }
 
     /**
@@ -33,6 +37,11 @@ public class TokenBlacklistService {
      * @return true nếu token đã bị vô hiệu hóa
      */
     public boolean isBlacklisted(String token) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(token));
+        try {
+            return Boolean.TRUE.equals(redisTemplate.hasKey(token));
+        } catch (Exception e) {
+            System.err.println("[WARN] Redis không khả dụng, bỏ qua kiểm tra blacklist: " + e.getMessage());
+            return false; // Nếu Redis chết, coi như token hợp lệ
+        }
     }
 }

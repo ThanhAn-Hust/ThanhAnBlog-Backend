@@ -28,10 +28,11 @@ public class PostRequestDto {
     @NotBlank(message = "Status is required (DRAFT, PUBLISHED, ARCHIVED)")
     private String status;
     
-    @NotNull(message = "Category ID is required")
     private UUID categoryId;
     
     private List<UUID> tagIds;
+
+    private List<String> tagNames;
     
     // Flag để gửi mail khi đăng bài
     @Builder.Default

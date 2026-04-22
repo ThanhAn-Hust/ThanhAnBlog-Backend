@@ -55,10 +55,28 @@ public class PostService {
 
     @Transactional
     public PostResponseDto createPost(PostRequestDto request) {
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        Category category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryRepository.findById(request.getCategoryId()).orElse(null);
+        }
 
-        List<Tag> tags = tagRepository.findAllById(request.getTagIds());
+        List<Tag> tags = new java.util.ArrayList<>();
+        if (request.getTagIds() != null) {
+            tags.addAll(tagRepository.findAllById(request.getTagIds()));
+        }
+        // Hỗ trợ tạo tag bằng tên (tự động tạo tag mới nếu chưa tồn tại)
+        if (request.getTagNames() != null) {
+            for (String tagName : request.getTagNames()) {
+                String trimmed = tagName.trim();
+                if (!trimmed.isEmpty()) {
+                    Tag tag = tagRepository.findByName(trimmed)
+                            .orElseGet(() -> tagRepository.save(
+                                    Tag.builder().name(trimmed).build()
+                            ));
+                    tags.add(tag);
+                }
+            }
+        }
 
         String slug = generateSlug(request.getTitle());
         if (postRepository.existsBySlug(slug)) {
