@@ -65,4 +65,4 @@ ENV PORT=10000
 EXPOSE 10000
 
 # Chạy ứng dụng với giới hạn RAM và ép cổng theo Render
-ENTRYPOINT ["sh", "-c", "java -Xmx300m -jar app.jar --server.port=${PORT}"]
+ENTRYPOINT ["sh", "-c", "exec java -Xmx300m -jar app.jar --server.port=${PORT} --server.address=0.0.0.0"]
