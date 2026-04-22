@@ -16,8 +16,9 @@ WORKDIR /app
 # Copy file JAR đã được build từ Stage 1 sang
 COPY --from=builder /app/target/*.jar app.jar
 
-# Render sẽ dùng cổng biến môi trường PORT, nên chúng ta phơi ra cổng mặc định là 10000
+# Khai báo ENV PORT mặc định
+ENV PORT=10000
 EXPOSE 10000
 
-# Chạy ứng dụng
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Chạy ứng dụng với giới hạn RAM (Free tier Render chỉ có 512MB) và ép cổng theo Render
+ENTRYPOINT ["sh", "-c", "java -Xmx300m -jar app.jar --server.port=${PORT}"]
