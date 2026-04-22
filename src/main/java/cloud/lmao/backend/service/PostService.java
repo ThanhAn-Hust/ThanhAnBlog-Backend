@@ -110,6 +110,52 @@ public class PostService {
     }
 
     @Transactional
+    public PostResponseDto updatePost(UUID id, PostRequestDto request) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        Category category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryRepository.findById(request.getCategoryId()).orElse(null);
+        }
+
+        List<Tag> tags = new java.util.ArrayList<>();
+        if (request.getTagIds() != null) {
+            tags.addAll(tagRepository.findAllById(request.getTagIds()));
+        }
+        if (request.getTagNames() != null) {
+            for (String tagName : request.getTagNames()) {
+                String trimmed = tagName.trim();
+                if (!trimmed.isEmpty()) {
+                    Tag tag = tagRepository.findByName(trimmed)
+                            .orElseGet(() -> tagRepository.save(Tag.builder().name(trimmed).build()));
+                    tags.add(tag);
+                }
+            }
+        }
+
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+        post.setSummary(request.getSummary());
+        post.setThumbnail(request.getThumbnail());
+        post.setStatus(request.getStatus());
+        post.setCategory(category);
+        post.setTags(new HashSet<>(tags));
+
+        if ("PUBLISHED".equals(request.getStatus()) && post.getPublishedAt() == null) {
+            post.setPublishedAt(LocalDateTime.now());
+        }
+
+        Post savedPost = postRepository.save(post);
+
+        if ("PUBLISHED".equals(request.getStatus()) && request.isNotifySubscribers()) {
+            eventPublisher.publishEvent(new PostPublishedEvent(this, savedPost));
+        }
+
+        return mapToDto(savedPost);
+    }
+
+    @Transactional
     public void deletePost(UUID id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
