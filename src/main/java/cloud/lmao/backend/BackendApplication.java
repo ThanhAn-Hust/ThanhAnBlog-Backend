@@ -19,21 +19,4 @@ public class BackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BackendApplication.class, args);
 	}
-
-	@Bean
-	public CommandLineRunner initAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-		return args -> {
-			if (userRepository.findByUsername("ancoadmin").isEmpty()) {
-				User admin = User.builder()
-						.id(UUID.randomUUID())
-						.username("ancoadmin")
-						.password(passwordEncoder.encode("thanhansblogonhighnine"))
-						.email("thanhanlevan@gmail.com")
-						.role("ROLE_ADMIN")
-						.build();
-				userRepository.save(admin);
-				System.out.println("Tạo thành công tài khoản Admin mặc định");
-			}
-		};
-	}
 }
